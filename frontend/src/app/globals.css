@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 240 8% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+
+    --primary: 37 8% 40%; /* Slightly cooler, more slaty tone */
+    --primary-foreground: 0 0% 100%; /* White text for clarity */
+
+    /* Secondary - Soft Slate/Charcoal */
+    --secondary: 240 5% 20%; /* Slate/Charcoal tone */
+    --secondary-foreground: 0 0% 90%; /* Slightly off-white for readability */
+
+    /* Muted - True muted, more neutral and lighter */
+    --muted: 45 15% 85%; /* Lighter, more neutral beige with less saturation */
+    --muted-foreground: 240 5% 20%; /* Muted darker text for a softer feel */
+
+    /* Accent - Muted Coral */
+    --accent: 20 30% 55%; /* #F1A7A7, muted coral */
+    --accent-foreground: 0 0% 95%; /* Light text for clarity */
+
+    /* Destructive - Soft Red */
+    --destructive: 0 60% 45%; /* #D56B6B, softer red */
+    --destructive-foreground: 0 0% 100%; /* White for destructive elements */
+
+    --border: 240 5% 85%;
+    --input: 240 5% 85%;
+    --ring: 37 12% 45%; /* Matches softened primary */
+    --radius: 0.5rem;
+
+    /* Chart colors */
+    --chart-1: 37 12% 45%; /* Darkened Primary */
+    --chart-2: 160 45% 55%; /* Soft Teal */
+    --chart-3: 40 75% 60%; /* Warm Ochre */
+    --chart-4: 10 50% 50%; /* Muted Rose */
+    --chart-5: 200 50% 50%; /* Soft Sky Blue */
+  }
+
+  .dark {
+    --background: 240 10% 10%;
+    --foreground: 0 0% 90%;
+    --card: 240 10% 12%;
+    --card-foreground: 0 0% 90%;
+    --popover: 240 10% 10%;
+    --popover-foreground: 0 0% 90%;
+
+    /* Primary - Darker Beige with White Text */
+    --primary: 37 12% 35%; /* Darkened shade of B6A28E */
+    --primary-foreground: 0 0% 100%; /* White text for contrast */
+
+    --primary: 37 8% 40%; /* Slightly cooler, more slaty tone */
+    --primary-foreground: 0 0% 100%; /* White text for clarity */
+
+    /* Muted - Slightly lighter than Secondary, still subdued */
+    --muted: 240 5% 35%; /* Lighter than secondary, maintaining a neutral tone */
+    --muted-foreground: 240 5% 70%; /* Slightly lighter muted text */
+
+    /* Accent - Muted Coral */
+    --accent: 20 30% 50%; /* Muted coral */
+    --accent-foreground: 0 0% 90%; /* White text for clarity */
+
+    /* Destructive - Soft Red */
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 5% 35%;
+    --input: 240 5% 35%;
+    --ring: 37 12% 35%; /* Matches softened primary */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

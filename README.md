@@ -1,4 +1,4 @@
-# CreativeConnect 🎨
+# RadiatorForge 🎨
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.0.2-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Express](https://img.shields.io/badge/Express-4.21.1-lightgrey?style=flat-square&logo=express)](https://expressjs.com/)

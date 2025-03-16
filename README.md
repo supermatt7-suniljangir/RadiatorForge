@@ -1,4 +1,4 @@
-# RadiatorForge 🎨
+#  RadiatorForge 
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.0.2-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Express](https://img.shields.io/badge/Express-4.21.1-lightgrey?style=flat-square&logo=express)](https://expressjs.com/)
@@ -9,21 +9,21 @@
 A modern portfolio platform for creative professionals built with the latest web tech stack. Share your work, connect with peers, and get discovered by employers!
 
 
-## 🚀 Features
+##   Features
 
-### 👤 For Creators
+###  For Creators
 - **Project Showcase** – Upload high-quality images and videos to showcase your creative work.
 - **Profile Customization** – Build your personal brand with a personal portfolio.
 - **Advanced Search** – MongoDB aggregation pipelines enable fast, powerful search with complex filters.
 - **Discovery** – Get your projects seen by the right people through smart recommendations.
 
-### 👀 For Viewers
+###  For Viewers
 - **Explore Feed** – Discover amazing creative work from talented individuals.
 - **Bookmarks** – Save projects you love for later inspiration.
 - **Like & Comment** – Engage with content that resonates with you.
 - **Real-time Chat** – Connect directly with creators you're interested in through Socket.io.
 
-### 🔧 Platform Highlights  
+###  Platform Highlights  
 - **Highly Customizable Portfolios** – Update your profile, social media settings, avatar, banner, employment, and availability status.  
 - **Advanced Search & Discovery** – MongoDB aggregation pipelines for powerful, filter-based search by tags, categories, and creator profiles.  
 - **Real-time Chat** – Instant messaging with Socket.io for direct communication between creators and potential employers.  
@@ -68,7 +68,7 @@ AWS (S3, CloudFront, EC2) + CDK
 - **CI/CD**: Automated build and deployment pipeline
 
 
-## 🛠️ Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js 18+

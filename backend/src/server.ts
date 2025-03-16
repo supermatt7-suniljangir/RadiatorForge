@@ -20,7 +20,6 @@ const initializeServer = async () => {
         // Step 2: Create an HTTP server and attach the Express app
         const server = http.createServer(app);
 
-
         const io = new Server(server, {
             cors: getCorsConfig(),
         });
@@ -31,7 +30,7 @@ const initializeServer = async () => {
         // Step 5: Start the server and listen on the specified port
         server.listen(PORT, () => {
             logger.info(
-                `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+                `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`,
             );
         });
 
@@ -57,7 +56,7 @@ const initializeServer = async () => {
                 logger.info("Graceful shutdown completed successfully");
                 process.exit(0); // Exit with success code
             } catch (err) {
-                logger.error(`Error during graceful shutdown: ${err}`);
+                logger.error(`Error during graceful shutdown: ${err}`)
                 process.exit(1); // Exit with error code
             }
         };

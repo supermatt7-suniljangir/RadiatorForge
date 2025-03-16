@@ -8,21 +8,33 @@
 
 A modern portfolio platform for creative professionals built with the latest web tech stack. Share your work, connect with peers, and get discovered by employers!
 
-![CreativeConnect Preview](https://via.placeholder.com/800x400)
 
 ## 🚀 Features
 
 ### 👤 For Creators
-- **Project Showcase** - Upload high-quality images and videos to showcase your creative work
-- **Profile Customization** - Build your personal brand with a fully customizable profile
-- **Analytics** - Track who's viewing and engaging with your work
-- **Discovery** - Get your projects seen by the right people
+- **Project Showcase** – Upload high-quality images and videos to showcase your creative work.
+- **Profile Customization** – Build your personal brand with a personal portfolio.
+- **Advanced Search** – MongoDB aggregation pipelines enable fast, powerful search with complex filters.
+- **Discovery** – Get your projects seen by the right people through smart recommendations.
 
 ### 👀 For Viewers
-- **Explore Feed** - Discover amazing creative work from talented individuals
-- **Bookmarks** - Save projects you love for later inspiration
-- **Like & Comment** - Engage with content that resonates with you
-- **Real-time Chat** - Connect directly with creators you're interested in
+- **Explore Feed** – Discover amazing creative work from talented individuals.
+- **Bookmarks** – Save projects you love for later inspiration.
+- **Like & Comment** – Engage with content that resonates with you.
+- **Real-time Chat** – Connect directly with creators you're interested in through Socket.io.
+
+### 🔧 Platform Highlights  
+- **Highly Customizable Portfolios** – Update your profile, social media settings, avatar, banner, employment, and availability status.  
+- **Advanced Search & Discovery** – MongoDB aggregation pipelines for powerful, filter-based search by tags, categories, and creator profiles.  
+- **Real-time Chat** – Instant messaging with Socket.io for direct communication between creators and potential employers.  
+- **Engagement & Feedback** – Like and bookmark projects, comment to appreciate creative work, and manage saved content.  
+- **Creative Licensing** – Allow creators to define different levels of Creative Commons rights for their projects.  
+- **Performance-Optimized Media Handling** – High-quality image and video uploads with automatic compression and fast delivery using AWS S3 + CloudFront CDN.  
+- **Secure & Scalable** – JWT-based authentication with HTTP-only cookies, Redis for caching, and AWS EC2 for scalable deployment.  
+- **Accessibility & Mobile-Friendly** – Fully responsive design with a mobile-first approach for consistent experience across devices.  
+
+
+---
 
 ## 💻 Tech Stack
 
@@ -30,7 +42,7 @@ A modern portfolio platform for creative professionals built with the latest web
 ```
 Next.js 15 (App Router) + React 18 + TypeScript
 ```
-- **UI Components**: Radix UI primitives with custom styled components
+- **UI Components**: Intuitive Shadcn components
 - **Styling**: Tailwind CSS for responsive design
 - **State Management**: React Context + Hooks
 - **Data Fetching**: Next.js Server Components + Client-side fetching
@@ -55,19 +67,6 @@ AWS (S3, CloudFront, EC2) + CDK
 - **IaC**: AWS CDK for infrastructure management
 - **CI/CD**: Automated build and deployment pipeline
 
-## 🔥 Key Implementations
-
-- **SSR + ISR** - Server-side rendering with incremental static regeneration
-- **Real-time Chat** - Direct messaging between creators and potential employers
-- **Media CDN** - Globally distributed content delivery with AWS CloudFront
-- **Multi-layer Caching** - Performance optimization with Next.js and Redis
-- **Responsive Design** - Mobile-first approach that works on all devices
-
-## 📸 Screenshots
-
-| Home Feed | Project Detail | Profile Page |
-|:---:|:---:|:---:|
-| ![Home](https://via.placeholder.com/250x150) | ![Project](https://via.placeholder.com/250x150) | ![Profile](https://via.placeholder.com/250x150) |
 
 ## 🛠️ Getting Started
 
@@ -115,18 +114,6 @@ Visit `http://localhost:5173` to see the app in action!
 - Creating responsive, accessible UI components with Radix UI primitives
 - Managing real-time connections with Socket.io
 
-## 🚧 Roadmap
-
-- [ ] Improved search functionality with filters
-- [ ] Enhanced mobile experience
-- [ ] Public API for integrations
-- [ ] Collaborative project editing
-- [ ] Performance optimizations for large media projects
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-#### Built with ❤️ by [Your Name]
+Thank you for vising my project.

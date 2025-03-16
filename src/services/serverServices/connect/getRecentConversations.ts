@@ -23,8 +23,7 @@ export const getRecentConversations = async (): Promise<ApiResponse> => {
                 Cookie: cookieHeader,
             },
             next: {
-                tags: [`conversations`],
-                revalidate: 60 * 60,
+                tags: ["conversations"]
             },
         });
 

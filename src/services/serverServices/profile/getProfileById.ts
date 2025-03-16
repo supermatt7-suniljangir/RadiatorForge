@@ -1,6 +1,5 @@
 "use server";
 
-import { User } from "@/types/user";
 import { URL } from "@/api/config/configs";
 import { ApiResponse } from "@/types/ApiResponse";
 
@@ -28,13 +27,22 @@ export const getProfileById = async (userId: string): Promise<ApiResponse> => {
     const result: ApiResponse = await response.json();
 
     if (!response.ok || !result.success) {
-      console.error("Failed to fetch user profile:", result.message || response.statusText);
-      return { success: false, message: result.message || "Failed to fetch user profile" };
+      console.error(
+        "Failed to fetch user profile:",
+        result.message || response.statusText,
+      );
+      return {
+        success: false,
+        message: result.message || "Failed to fetch user profile",
+      };
     }
 
     return result;
   } catch (error: any) {
     console.error("Error fetching user profile:", error.message);
-    return { success: false, message: error.message || "An unexpected error occurred" };
+    return {
+      success: false,
+      message: error.message || "An unexpected error occurred",
+    };
   }
 };

@@ -1,10 +1,10 @@
 "use client";
-import React, { useEffect, useState, useCallback, useTransition } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useUser } from "@/contexts/UserContext";
-import { User } from "@/types/user";
-import { useFollowOperations } from "@/features/follow/useFollowOperations";
+import React, {useEffect, useState, useCallback, useTransition} from "react";
+import {Button} from "@/components/ui/button";
+import {cn} from "@/lib/utils";
+import {useUser} from "@/contexts/UserContext";
+import {User} from "@/types/user";
+import {useFollowOperations} from "@/features/follow/useFollowOperations";
 
 interface FollowButtonProps {
     className?: string;
@@ -13,15 +13,15 @@ interface FollowButtonProps {
 }
 
 const FollowDetails: React.FC<FollowButtonProps> = ({
-    size = "small",
-    user,
-    className,
-}) => {
-    const { user: currentUser, isLoading } = useUser();
-    const { checkFollowStatus, toggleFollowUser } = useFollowOperations();
+                                                        size = "small",
+                                                        user,
+                                                        className,
+                                                    }) => {
+    const {user: currentUser, isLoading} = useUser();
+    const {checkFollowStatus, toggleFollowUser} = useFollowOperations();
     const [isFollowing, setIsFollowing] = useState<boolean>(false);
     const [followersCount, setFollowersCount] = useState<number>(
-        user?.followersCount ?? currentUser?.followersCount ?? 0
+        user?.followersCount ?? currentUser?.followersCount ?? 0,
     );
     const [isPending, startTransition] = useTransition();
 
@@ -39,7 +39,6 @@ const FollowDetails: React.FC<FollowButtonProps> = ({
                 setIsFollowing(response);
             }
         };
-
         fetchFollowStatus();
 
         return () => {
@@ -56,7 +55,9 @@ const FollowDetails: React.FC<FollowButtonProps> = ({
 
             // Optimistic update
             setIsFollowing(!previousFollowing);
-            setFollowersCount((prev) => Math.max(0, prev + (!previousFollowing ? 1 : -1)));
+            setFollowersCount((prev) =>
+                Math.max(0, prev + (!previousFollowing ? 1 : -1)),
+            );
 
             try {
                 await toggleFollowUser(user._id);
@@ -66,15 +67,22 @@ const FollowDetails: React.FC<FollowButtonProps> = ({
                 setFollowersCount(previousCount);
             }
         });
-    }, [user?._id, isFollowing, isPending, isLoading, currentUser, followersCount, toggleFollowUser]);
+    }, [
+        user?._id,
+        isFollowing,
+        isPending,
+        isLoading,
+        currentUser,
+        followersCount,
+        toggleFollowUser,
+    ]);
 
     // Render current user's follow stats
     if (!isExternalProfile) {
         return (
-            <div className="flex items-center">
-                <span className="text-sm text-muted-foreground">
-                    {followersCount} Followers • {currentUser?.followingCount ?? 0} Following
-                </span>
+            <div className="w-full text-center md:text-start">
+                {followersCount} Followers • {currentUser?.followingCount ?? 0}{" "}
+                Following
             </div>
         );
     }
@@ -82,10 +90,8 @@ const FollowDetails: React.FC<FollowButtonProps> = ({
     // Render external user's profile with follow button
     return (
         <div className="flex items-start flex-col relative h-auto space-y-2">
-            <div>
-                <span className="text-sm text-muted-foreground">
-                    {followersCount} Followers • {user?.followingCount ?? 0} Following
-                </span>
+            <div className={`w-full text-center md:text-start`}>
+                {followersCount} Followers • {user?.followingCount ?? 0} Following
             </div>
             <Button
                 onClick={handleFollowToggle}

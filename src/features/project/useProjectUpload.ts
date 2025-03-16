@@ -4,6 +4,7 @@ import {useState} from "react";
 import {ProjectUploadType} from "@/types/project";
 import ProjectUploadService from "@/services/clientServices/projectUpload/ProjectUploadService";
 import {toast} from "@/hooks/use-toast";
+import {revalidateTags} from "@/lib/revalidateTags";
 
 export const useProjectUpload = () => {
     const [publishing, setPublishing] = useState(false);
@@ -13,7 +14,7 @@ export const useProjectUpload = () => {
         setLoading(true);
         try {
             const response = await ProjectUploadService.createProject(data);
-
+            revalidateTags(['userProjects'])
             return response;
         } catch (error) {
             toast({
@@ -33,9 +34,8 @@ export const useProjectUpload = () => {
         setPublishing(true);
         setLoading(true);
         try {
-
             const response = await ProjectUploadService.updateProject(data);
-
+            revalidateTags(['userProjects'])
             return response;
         } catch (error) {
             toast({
@@ -55,7 +55,7 @@ export const useProjectUpload = () => {
         setLoading(true);
         try {
             const response = await ProjectUploadService.deleteProject(projectId);
-
+            revalidateTags(['userProjects'])
             return response;
         } catch (error) {
             toast({

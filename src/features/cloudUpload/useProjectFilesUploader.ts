@@ -46,8 +46,28 @@ const compressImages = async (files: TempMedia[]): Promise<TempMedia[]> => {
             compressedFiles.push(file);
             continue;
         }
+
         try {
-            const compressedFile = await imageCompression(file.file, options.default);
+            // Skip compression for files under 1MB
+            if (file.file.size < 1 * 1024 * 1024) {
+                compressedFiles.push(file);
+                continue;
+            }
+
+            // Apply different compression levels based on file size
+            let compressionOptions;
+            if (file.file.size < 2 * 1024 * 1024) {
+                // Light compression for files between 1-2MB (30% quality reduction)
+                compressionOptions = {...options.default, maxSizeMB: file.file.size / (1024 * 1024) * 0.7};
+            } else if (file.file.size < 4 * 1024 * 1024) {
+                // Medium compression for files between 2-4MB
+                compressionOptions = {...options.default, maxSizeMB: file.file.size / (1024 * 1024) * 0.6};
+            } else {
+                // Default (stronger) compression for larger files
+                compressionOptions = options.default;
+            }
+
+            const compressedFile = await imageCompression(file.file, compressionOptions);
             compressedFiles.push({...file, file: compressedFile});
         } catch (error) {
             console.error(`Image compression failed: ${file.file.name}`, error);
@@ -59,7 +79,7 @@ const compressImages = async (files: TempMedia[]): Promise<TempMedia[]> => {
 
 const uploadProjectFiles = async (
     files: TempMedia[],
-    thumbnail?: Thumbnail
+    thumbnail?: Thumbnail,
 ) => {
     try {
         if (files.length === 0 && !thumbnail) {
@@ -74,13 +94,13 @@ const uploadProjectFiles = async (
         const uploadUrls: UploadFileResponse[] =
             processedFiles.length > 0
                 ? await FilesUploadService.getUploadUrls(
-                    processedFiles.map((item) => item.file)
+                    processedFiles.map((item) => item.file),
                 )
                 : [];
         // Check if a thumbnail is provided and get a separate signed URL
         let thumbnailUrl: UploadFileResponse | null = null;
         if (thumbnail) {
-            let SignedThumbnailUrl = await FilesUploadService.getUploadUrls([
+            const SignedThumbnailUrl = await FilesUploadService.getUploadUrls([
                 thumbnail.file,
             ]);
             thumbnailUrl = SignedThumbnailUrl[0];
@@ -93,7 +113,6 @@ const uploadProjectFiles = async (
                     file: processedFiles[i]?.file,
                 }))
                 : [];
-
         // Add the thumbnail to upload data if it exists
         if (thumbnail && thumbnailUrl) {
             uploadData.push({
@@ -130,7 +149,7 @@ export const useProjectFilesUploader = () => {
 
     const handleProjectFilesUpload = async (
         files: TempMedia[],
-        thumnail?: Thumbnail
+        thumnail?: Thumbnail,
     ) => {
         setLoading(true);
         try {

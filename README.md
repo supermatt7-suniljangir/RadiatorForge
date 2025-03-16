@@ -80,8 +80,8 @@ AWS (S3, CloudFront, EC2) + CDK
 
 ```bash
 # Clone the repos
-git clone https://github.com/yourusername/creativeconnect-frontend.git
-git clone https://github.com/yourusername/creativeconnect-backend.git
+git clone https://github.com/supermatt7-suniljangir/RF-Backend.git
+git clone https://github.com/supermatt7-suniljangir/RF-Frontend.git
 
 # Frontend setup
 cd creativeconnect-frontend

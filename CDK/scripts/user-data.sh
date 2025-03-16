@@ -40,15 +40,16 @@ sudo chown -R ubuntu:ubuntu /home/ubuntu/app
 # Set up environment variables
 cat > /home/ubuntu/app/.env << EOL
 PORT=5500
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/data?retryWrites=true&w=majority&appName=cs
-JWT_SECRET=supersecret
-GOOGLE_CLIENT_ID=1234567890-abc123def456ghi789.apps.googleusercontent.com
-AWS_ACCESS_KEY_ID=AKIAEXAMPLE123456
-AWS_SECRET_ACCESS_KEY=EXAMPLESECRETKEY1234567890
+MONGO_URI=mongodb+srv://<your-mongo-uri>
+JWT_SECRET=<your-jwt-secret>
+GOOGLE_CLIENT_ID=<your-google-client-id>
+AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
+AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
 AWS_REGION=us-east-1
-AWS_S3_BUCKET_NAME=my-example-bucket
+AWS_S3_BUCKET_NAME=<your-s3-bucket-name>
 CORS_ORIGIN=https://radiatorforge.suniljangir.site
 EOL
+
 
 
 # Clone the backend repository

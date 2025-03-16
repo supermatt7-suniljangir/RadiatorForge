@@ -1,35 +1,17 @@
 import Message from "../models/others/messages.model";
 import User from "../models/user/user.model";
-import {invalidateCache, redisClient} from "../redis/redisClient";
 import logger from "../config/logger";
 
-class MessageService {
-    private static MESSAGE_CACHE_EXPIRATION = 60; // 1 min
-    private static CONVERSATION_CACHE_EXPIRATION = 30; // 30 sec
-
-    // Cache key generation methods
-    private static getMessagesCacheKey(userId: string, receiverId: string): string {
-        return `messages:${userId}:${receiverId}`;
-    }
-
-    private static getConversationsCacheKey(userId: string): string {
-        return `conversations:${userId}`;
-    }
-
+class ConnectService {
     /**
      * Fetch paginated messages between two users.
      */
-    static async getMessages(userId: string, receiverId: string, skip: number, limit: number) {
-        const cacheKey = this.getMessagesCacheKey(userId, receiverId);
-
-        // Try fetching from cache
-        const cachedData = await redisClient.get(cacheKey);
-        if (cachedData) {
-            logger.debug(`Cache hit for messages between ${userId} and ${receiverId}`);
-            return JSON.parse(cachedData);
-        }
-
-        logger.debug(`Cache miss for messages between ${userId} and ${receiverId}, fetching from DB`);
+    static async getMessages(
+        userId: string,
+        receiverId: string,
+        skip: number,
+        limit: number,
+    ) {
         const [messages, total] = await Promise.all([
             Message.find({
                 $or: [
@@ -51,10 +33,6 @@ class MessageService {
             }),
         ]);
 
-        // Store in cache
-        await redisClient.set(cacheKey, JSON.stringify({messages, total}), {EX: this.MESSAGE_CACHE_EXPIRATION});
-        logger.debug(`Cached messages between ${userId} and ${receiverId}`);
-
         return {messages, total};
     }
 
@@ -62,16 +40,6 @@ class MessageService {
      * Get a list of recent conversations for a user with basic user details.
      */
     static async getRecentConversations(userId: string) {
-        const cacheKey = this.getConversationsCacheKey(userId);
-
-        // Try fetching from cache
-        const cachedData = await redisClient.get(cacheKey);
-        if (cachedData) {
-            logger.debug(`Cache hit for recent conversations of ${userId}`);
-            return JSON.parse(cachedData);
-        }
-
-        logger.debug(`Cache miss for recent conversations of ${userId}, fetching from DB`);
         const conversations = await Message.aggregate([
             {
                 $match: {
@@ -120,10 +88,6 @@ class MessageService {
             lastMessageAt: conv.lastMessageAt,
         }));
 
-        // Store in cache
-        await redisClient.set(cacheKey, JSON.stringify(refinedConversations), {EX: this.CONVERSATION_CACHE_EXPIRATION});
-        logger.debug(`Cached recent conversations for ${userId}`);
-
         return refinedConversations;
     }
 
@@ -132,13 +96,17 @@ class MessageService {
         return !existingConversation;
     }
 
-    static async addNewMessage({senderId, recipientId, text, conversationId}: {
-        senderId: string,
-        recipientId: string,
-        text: string,
-        conversationId: string
+    static async addNewMessage({
+                                   senderId,
+                                   recipientId,
+                                   text,
+                                   conversationId,
+                               }: {
+        senderId: string;
+        recipientId: string;
+        text: string;
+        conversationId: string;
     }) {
-
         const newMessage = await Message.create({
             sender: senderId,
             recipient: recipientId,
@@ -146,15 +114,30 @@ class MessageService {
             text,
         });
 
-        // Use the generic invalidateCache function
-        await invalidateCache(this.getMessagesCacheKey(senderId, recipientId));
-
-        // Also invalidate conversations cache for both users
-        await invalidateCache(this.getConversationsCacheKey(senderId));
-        await invalidateCache(this.getConversationsCacheKey(recipientId));
-
         return newMessage;
+    }
+
+    static async deleteConversation(userId: string, recipientId: string) {
+        const session = await Message.startSession();
+        session.startTransaction();
+
+        try {
+            await Message.deleteMany({
+                $or: [
+                    {sender: userId, recipient: recipientId},
+                    {sender: recipientId, recipient: userId},
+                ],
+            }).session(session);
+
+            await session.commitTransaction();
+            session.endSession();
+        } catch (error) {
+            await session.abortTransaction();
+            session.endSession();
+            logger.error("Error deleting conversation:", error);
+            throw new Error("Failed to delete conversation");
+        }
     }
 }
 
-export default MessageService;
+export default ConnectService;

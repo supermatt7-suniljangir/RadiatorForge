@@ -6,7 +6,7 @@
  * utilities like logging, compression, CORS, and helmet for enhanced security.
  */
 
-import express, {NextFunction, Request, Response} from "express"; // Core Express framework
+import express, { NextFunction, Request, Response } from "express"; // Core Express framework
 import compression from "compression"; // Middleware to compress responses
 import cookieParser from "cookie-parser"; // Middleware to parse cookies
 import cors from "cors"; // Middleware to enable CORS
@@ -17,13 +17,12 @@ dotenv.config(); // Load environment variables from .env file
 
 import logger from "./config/logger"; // Custom logger for application logs
 import routerV1 from "./routes/RouterV1"; // API routes (version 1)
-import {globalErrorHandler, notFound} from "./middlewares/error"; // Error handling middlewares
-import {STAGES} from "./utils/stages"; // Constants for environment stages (e.g., "production", "development")
-import {getCorsConfig} from "./config/corsConfig";
+import { globalErrorHandler, notFound } from "./middlewares/error"; // Error handling middlewares
+import { STAGES } from "./utils/stages"; // Constants for environment stages (e.g., "production", "development")
+import { getCorsConfig } from "./config/corsConfig";
 
 // Initialize the Express application
 const app = express();
-
 
 /**
  * CORS Configuration
@@ -37,6 +36,7 @@ const app = express();
  */
 
 app.use(cors(getCorsConfig()));
+app.set("trust proxy", 1);
 
 /**
  * Middleware Setup
@@ -50,7 +50,7 @@ app.use(cors(getCorsConfig()));
 app.use(cookieParser());
 app.use(express.json());
 app.use(compression());
-app.use(express.urlencoded({extended: true, limit: "10kb"}));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 /**
  * Custom Request Logging Middleware
@@ -67,33 +67,32 @@ app.use(express.urlencoded({extended: true, limit: "10kb"}));
  * - Info (200-399): Successful responses
  */
 
-
 app.use((req, res, next) => {
-    const originalUrl = req.originalUrl || req.url; // Capture the request URL
-    const start = Date.now(); // Start timing the request
-    // Log response details when the request finishes
-    res.on("finish", () => {
-        const duration = Date.now() - start; // Calculate response duration
-        const statusCode = res.statusCode; // Capture the status code
-        const logMessage = `${req.method} ${originalUrl} → ${statusCode} (${duration}ms)`; // Create log message
-        const logData = {
-            method: req.method,
-            url: originalUrl,
-            statusCode: statusCode,
-            duration,
-        };
+  const originalUrl = req.originalUrl || req.url; // Capture the request URL
+  const start = Date.now(); // Start timing the request
+  // Log response details when the request finishes
+  res.on("finish", () => {
+    const duration = Date.now() - start; // Calculate response duration
+    const statusCode = res.statusCode; // Capture the status code
+    const logMessage = `${req.method}  ${originalUrl} → ${statusCode} (${duration}ms)`; // Create log message
+    // const logData = {
+    //     method: req.method,
+    //     url: originalUrl,
+    //     statusCode: statusCode,
+    //     duration,
+    // };
 
-        // Log based on status code severity
-        if (statusCode >= 500) {
-            logger.error(logMessage, logData); // Server errors
-        } else if (statusCode >= 400) {
-            logger.warn(logMessage, logData); // Client errors
-        } else {
-            logger.info(logMessage, logData); // Successful responses
-        }
-    });
+    // Log based on status code severity
+    if (statusCode >= 500) {
+      logger.error(logMessage); // Server errors
+    } else if (statusCode >= 400) {
+      logger.warn(logMessage); // Client errors
+    } else {
+      logger.info(logMessage); // Successful responses
+    }
+  });
 
-    next(); // Proceed to the next middleware
+  next(); // Proceed to the next middleware
 });
 
 /**
@@ -103,12 +102,11 @@ app.use((req, res, next) => {
  * It uses express-winston to capture detailed error information.
  */
 app.use(
-    expressWinston.errorLogger({
-        winstonInstance: logger, // Use the custom logger
-        meta: true, // Include metadata in logs
-    })
+  expressWinston.errorLogger({
+    winstonInstance: logger, // Use the custom logger
+    meta: true, // Include metadata in logs
+  }),
 );
-
 
 /**
  * Helmet Configuration
@@ -119,11 +117,11 @@ app.use(
  * - Referrer Policy: Controls the Referer header for privacy and security.
  */
 app.use(
-    helmet({
-        contentSecurityPolicy: process.env.NODE_ENV === STAGES.PROD ? {} : false, // Disable CSP in development
-        crossOriginResourcePolicy: {policy: "cross-origin"}, // Allow cross-origin resources
-        referrerPolicy: {policy: "strict-origin-when-cross-origin"}, // Strict referrer policy
-    })
+  helmet({
+    contentSecurityPolicy: process.env.NODE_ENV === STAGES.PROD ? {} : false, // Disable CSP in development
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resources
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" }, // Strict referrer policy
+  }),
 );
 
 /**

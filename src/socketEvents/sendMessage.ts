@@ -1,44 +1,48 @@
 import {Server, Socket} from "socket.io";
-import Message from "../models/others/messages.model";
 import {createConversationID} from "../utils/createConversationID";
 import logger from "../config/logger";
 import redis from "../utils/redis";
 import {canSendMessage} from "../utils/rateLimiters";
 import {joinConversation} from "./roomManager";
-import MessageService from "../services/MessageService";
-import {invalidateCache} from "../redis/redisClient";
+import ConnectService from "../services/ConnectService";
 
 export const handleSendMessage = async (
     socket: Socket,
     io: Server,
     recipientId: string,
-    text: string
+    text: string,
 ) => {
     try {
-        if (!recipientId || !text) throw new Error("Recipient ID and message text are required.");
+        if (!recipientId || !text)
+            throw new Error("Recipient ID and message text are required.");
 
         // ✅ Get sender's userId from Redis (consistent source of truth)
         const senderUserId = await redis.get(`socket:${socket.id}`);
         if (!senderUserId) throw new Error("User not registered.");
-        if (senderUserId === recipientId) throw new Error("Cannot send messages to yourself.");
+        if (senderUserId === recipientId)
+            throw new Error("Cannot send messages to yourself.");
 
         if (!(await canSendMessage(senderUserId))) {
-            throw new Error("Rate limit exceeded. Please wait before sending more messages.");
+            throw new Error(
+                "Rate limit exceeded. Please wait before sending more messages.",
+            );
         }
 
         // ✅ Ensure the sender is part of the conversation room
         const conversationId = createConversationID(senderUserId, recipientId);
+        const isNewConversation =
+            await ConnectService.isNewConversation(conversationId);
         const isSenderInRoom = socket.rooms.has(`chat:${conversationId}`);
 
         if (!isSenderInRoom) {
-            logger.debug(`Sender ${senderUserId} is not in room chat:${conversationId}. Joining now...`);
+            logger.debug(
+                `Sender ${senderUserId} is not in room chat:${conversationId}. Joining now...`,
+            );
             await joinConversation(socket, recipientId); // Force join before sending
         }
 
-        const isNewConversation = await MessageService.isNewConversation(conversationId);
-
         // ✅ Save message to MongoDB
-        const newMessage = await MessageService.addNewMessage({
+        const newMessage = await ConnectService.addNewMessage({
             senderId: senderUserId,
             recipientId: recipientId,
             conversationId,
@@ -58,15 +62,10 @@ export const handleSendMessage = async (
 
         // ✅ Revalidate recent conversations if it's a new conversation
         if (isNewConversation) {
-            logger.debug('Revalidating recent conversations for sender and recipient');
-
-            await Promise.all([
-                invalidateCache(`conversations:${senderUserId}`),
-                invalidateCache(`conversation:${recipientId}`),
-            ]);
-
             // ✅ Emit "revalidateConversations" event to both users
-            const recipientSockets = await redis.smembers(`userSockets:${recipientId}`);
+            const recipientSockets = await redis.smembers(
+                `userSockets:${recipientId}`,
+            );
             recipientSockets.forEach((socketId) => {
                 io.to(socketId).emit("revalidateConversations", {with: senderUserId});
             });
@@ -81,7 +80,9 @@ export const handleSendMessage = async (
     } catch (error: any) {
         logger.error(`Error sending message: ${error.message}`);
         socket.emit("error", {
-            code: error.message.includes("Rate limit") ? "RATE_LIMITED" : "MESSAGE_FAILED",
+            code: error.message.includes("Rate limit")
+                ? "RATE_LIMITED"
+                : "MESSAGE_FAILED",
             message: error.message || "Failed to send message",
         });
     }

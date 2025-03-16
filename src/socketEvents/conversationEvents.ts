@@ -7,7 +7,6 @@ import logger from "../config/logger";
  * Register conversation-specific events.
  */
 export const registerConversationEvents = (socket: Socket, io: Server) => {
-
     socket.on("joinConversation", async (recipientId) => {
         if (!recipientId) {
             socket.emit("error", {message: "Invalid recipient ID"});

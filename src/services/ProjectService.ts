@@ -15,11 +15,17 @@ class ProjectService {
         return `project:${projectId}`;
     }
 
-    private getUserProjectsKey(userId: string, isOwnProfile: boolean = false): string {
+    private getUserProjectsKey(
+        userId: string,
+        isOwnProfile: boolean = false,
+    ): string {
         return `user:${userId}:projects:${isOwnProfile}`;
     }
 
-    private getProjectOwnershipKey(projectId: string, userId: Types.ObjectId): string {
+    private getProjectOwnershipKey(
+        projectId: string,
+        userId: Types.ObjectId,
+    ): string {
         return `ownership:${projectId}:${userId}`;
     }
 
@@ -36,8 +42,11 @@ class ProjectService {
         const project = await this.dbService.create(projectData);
 
         // Invalidate cache since data has changed
-        await invalidateCache(this.getUserProjectsKey(userId));
-        logger.debug(`Created project. Cache invalidated for ${this.getUserProjectsKey(userId)}`);
+        // Invalidate both profile views of user projects
+        await Promise.all([
+            invalidateCache(this.getUserProjectsKey(userId, true)),  // Own profile view
+            invalidateCache(this.getUserProjectsKey(userId, false)), // Public profile view
+        ]);
 
         return project;
     }
@@ -50,11 +59,16 @@ class ProjectService {
         });
 
         if (!project) throw new Error("Project not found");
+        const userId = project.creator.toString();
 
         // Invalidate cache since project data has changed
-        await invalidateCache(this.getProjectKey(projectId));
-        await invalidateCache(this.getUserProjectsKey(project.creator.toString()));
-        logger.debug(`Updated project ${projectId}. Cache invalidated`);
+        await Promise.all([
+            invalidateCache(this.getProjectKey(projectId)),
+            invalidateCache(this.getUserProjectsKey(userId, true)),
+            invalidateCache(this.getUserProjectsKey(userId, false)),
+            // If status changed to/from published, invalidate published lists
+            updates.status ? invalidateCache("projects:published:*") : Promise.resolve()
+        ]);
 
         return project;
     }
@@ -66,11 +80,8 @@ class ProjectService {
         // Try fetching from cache
         const cachedData = await redisClient.get(cacheKey);
         if (cachedData) {
-            logger.debug(`Cache hit for project ${projectId}`);
             return JSON.parse(cachedData);
         }
-
-        logger.debug(`Cache miss for project ${projectId}, fetching from DB`);
 
         const project = await Project.findById(projectId)
             .populate({
@@ -97,8 +108,9 @@ class ProjectService {
         }
 
         // Cache project data
-        await redisClient.set(cacheKey, JSON.stringify(project), {EX: this.CACHE_EXPIRATION});
-        logger.debug(`Cached project ${projectId}`);
+        await redisClient.set(cacheKey, JSON.stringify(project), {
+            EX: this.CACHE_EXPIRATION,
+        });
 
         return project;
     }
@@ -110,7 +122,6 @@ class ProjectService {
         // Try fetching from cache
         const cachedData = await redisClient.get(cacheKey);
         if (cachedData) {
-            logger.debug(`Cache hit for ownership check on project ${projectId}`);
             return JSON.parse(cachedData);
         }
 
@@ -122,8 +133,9 @@ class ProjectService {
         const isOwner = !!project;
 
         // Cache ownership data
-        await redisClient.set(cacheKey, JSON.stringify(isOwner), {EX: this.CACHE_EXPIRATION});
-        logger.debug(`Cached ownership for project ${projectId}`);
+        await redisClient.set(cacheKey, JSON.stringify(isOwner), {
+            EX: this.CACHE_EXPIRATION,
+        });
 
         return isOwner;
     }
@@ -135,24 +147,22 @@ class ProjectService {
         // Try fetching from cache
         const cachedData = await redisClient.get(cacheKey);
         if (cachedData) {
-            logger.debug(`Cache hit for published projects`);
             return JSON.parse(cachedData);
         }
-
-        logger.debug(`Cache miss for published projects, fetching from DB`);
 
         const projects = await Project.find({status: "published"})
             .select("title thumbnail stats creator featured publishedAt status")
             .limit(limit)
             .populate(
                 "creator",
-                "fullName profile.avatar profile.profession profile.availableForHire email"
+                "fullName profile.avatar profile.profession profile.availableForHire email",
             )
             .lean();
 
         // Cache published projects
-        await redisClient.set(cacheKey, JSON.stringify(projects), {EX: this.CACHE_EXPIRATION});
-        logger.debug(`Cached published projects`);
+        await redisClient.set(cacheKey, JSON.stringify(projects), {
+            EX: this.CACHE_EXPIRATION,
+        });
 
         return projects;
     }
@@ -170,17 +180,16 @@ class ProjectService {
         // Try fetching from cache
         const cachedData = await redisClient.get(cacheKey);
         if (cachedData) {
-            logger.debug(`Cache hit for projects by user ${userId}`);
             return JSON.parse(cachedData);
         }
-
-        logger.debug(`Cache miss for projects by user ${userId}, fetching from DB`);
 
         const projects = await Project.find({
             creator: validatedUserId,
             ...(isOwnProfile ? {} : {status: "published"}),
         })
-            .select("title thumbnail stats creator collaborators featured publishedAt status")
+            .select(
+                "title thumbnail stats creator collaborators featured publishedAt status",
+            )
             .populate({
                 path: "creator",
                 select: "email profile.avatar fullName",
@@ -192,8 +201,9 @@ class ProjectService {
             .lean();
 
         // Cache user projects
-        await redisClient.set(cacheKey, JSON.stringify(projects), {EX: this.CACHE_EXPIRATION});
-        logger.debug(`Cached projects for user ${userId}`);
+        await redisClient.set(cacheKey, JSON.stringify(projects), {
+            EX: this.CACHE_EXPIRATION,
+        });
 
         return projects;
     }
@@ -208,10 +218,14 @@ class ProjectService {
 
         if (!deleted) throw new Error("Failed to delete project");
 
-        // Invalidate cache since data has changed
-        await invalidateCache(this.getProjectKey(projectId));
-        await invalidateCache(this.getUserProjectsKey(userId));
-        logger.debug(`Deleted project ${projectId}. Cache invalidated`);
+        await Promise.all([
+            invalidateCache(this.getProjectKey(projectId)),
+            invalidateCache(this.getUserProjectsKey(userId, true)),
+            invalidateCache(this.getUserProjectsKey(userId, false)),
+            project.status === "published" ? invalidateCache("projects:published:*") : Promise.resolve(),
+            // Also invalidate any ownership checks
+            invalidateCache(`ownership:${projectId}:*`)
+        ]);
 
         return true;
     }

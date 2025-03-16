@@ -17,7 +17,6 @@ import {useRouter} from "next/navigation";
 
 interface MessageForm {
     text: string;
-
 }
 
 interface MessageModalProps {
@@ -36,26 +35,29 @@ const MessageModal: React.FC<MessageModalProps> = ({recepient}) => {
         formState: {errors},
     } = useForm<MessageForm>();
 
-    const onSubmit = useCallback(async (data: MessageForm) => {
-        if (!socket) {
+    const onSubmit = useCallback(
+        async (data: MessageForm) => {
+            if (!socket) {
+                toast({
+                    title: "Error",
+                    description: "Could not connect to the server",
+                    variant: "destructive",
+                });
+                return;
+            }
+            // Placeholder for message sending logic
+            socket.emit("sendMessage", {text: data.text, to: recepient._id});
             toast({
-                title: "Error",
-                description: "Could not connect to the server",
-                variant: "destructive"
+                title: "Message Sent",
+                description: "Your message has been sent successfully!",
             });
-            return;
-        }
-        // Placeholder for message sending logic
-        socket.emit("sendMessage", {text: data.text, to: recepient._id});
-        toast({
-            title: "Message Sent",
-            description: "Your message has been sent successfully!",
-        });
-        reset();
-        setIsOpen(false);
-        // router.push(`/connect/${recepient._id}`); //we are going to implement this later
-        router.push(`/connect`);
-    }, [reset, socket, recepient._id]);
+            reset();
+            setIsOpen(false);
+            // router.push(`/connect/${recepient._id}`); //we are going to implement this later
+            router.push(`/connect`);
+        },
+        [reset, socket, recepient._id],
+    );
 
     return (
         <>
@@ -78,7 +80,9 @@ const MessageModal: React.FC<MessageModalProps> = ({recepient}) => {
                             className="w-full h-52 p-4 resize-none border rounded-none focus:border-none"
                             {...register("text", {required: "Message cannot be empty"})}
                         />
-                        {errors.text && <p className="text-red-500">{errors.text.message}</p>}
+                        {errors.text && (
+                            <p className="text-red-500">{errors.text.message}</p>
+                        )}
                         <div className="flex justify-end mt-4 space-x-2">
                             <Button
                                 variant="ghost"

@@ -10,6 +10,7 @@ import Spinner from "@/app/loading";
 import { redirect } from "next/navigation";
 import ProfilePlaceholder from "@/media/user.png";
 import FollowDetails from "./FollowDetails";
+
 export default function UserProfileInfo() {
   const { user: authUser, isLoading } = useUser();
   if (isLoading) return <Spinner />;
@@ -23,30 +24,34 @@ export default function UserProfileInfo() {
             src={authUser.profile?.avatar}
             alt={authUser.fullName}
             className="rounded-full object-cover"
-          />) : <Image fill src={ProfilePlaceholder} alt={authUser.fullName} className="rounded-full object-cover" />
-        }
+          />
+        ) : (
+          <Image
+            fill
+            src={ProfilePlaceholder}
+            alt={authUser.fullName}
+            className="rounded-full object-cover"
+          />
+        )}
       </div>
 
       <div className="space-y-1">
         <h3 className="font-semibold text-xl">{authUser.fullName}</h3>
         <div>
           <Link href={`mailto:${authUser.email}`}>
-            <AtSign size={16} className="inline" />{" "}
-            {authUser.email}
+            <AtSign size={16} className="inline" /> {authUser.email}
           </Link>
         </div>
-        {authUser.profile?.profession && <div>
-          <Settings size={16} className="inline" /> {" "}
-          {authUser.profile.profession}
-        </div>}
+        {authUser.profile?.profession && (
+          <div>
+            <Settings size={16} className="inline" />{" "}
+            {authUser.profile.profession}
+          </div>
+        )}
         {authUser.profile?.website && (
           <div>
-            <Link
-              href={authUser.profile.website}
-              target="_blank"
-            >
-              <SquareArrowOutUpRight className="inline" size={14} />{" "}
-              Website
+            <Link href={authUser.profile.website} target="_blank">
+              <SquareArrowOutUpRight className="inline" size={14} /> Website
             </Link>
           </div>
         )}
@@ -63,12 +68,9 @@ export default function UserProfileInfo() {
         </Button>
       </Link>
 
-
       <div className="!mt-8 w-[95%] p-4 lg:p-0">
         <h2 className="text-muted-foreground font-bold uppercase">About</h2>
-        <p className="text-wrap">
-          {authUser.profile?.bio}
-        </p>
+        <p className="text-wrap">{authUser.profile?.bio}</p>
       </div>
 
       <Social socials={authUser.profile?.social} />

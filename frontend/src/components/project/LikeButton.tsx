@@ -5,6 +5,7 @@ import {Button} from "@/components/ui/button";
 import {cn} from "@/lib/utils";
 import {useUser} from "@/contexts/UserContext";
 import {useLikeOperations} from "@/features/like/useLIkeOperations";
+import {revalidateTags} from "@/lib/revalidateTags";
 
 interface LikeButtonProps {
     className?: string;
@@ -24,7 +25,8 @@ const LikeButton: React.FC<LikeButtonProps> = ({
     const [isLiked, setIsLiked] = useState<boolean>(false);
     const [likes, setLikes] = useState<number>(initialLikes);
     const [updating, setUpdating] = useState<boolean>(false);
-    const [hasCheckedInitialStatus, setHasCheckedInitialStatus] = useState<boolean>(false);
+    const [hasCheckedInitialStatus, setHasCheckedInitialStatus] =
+        useState<boolean>(false);
 
     // Separate effect for initial like status check that only runs once
     useEffect(() => {
@@ -56,9 +58,10 @@ const LikeButton: React.FC<LikeButtonProps> = ({
         const initialIsLiked = isLiked;
         const initialLikes = likes;
         setUpdating(true);
-        // Optimistic update
-        setIsLiked(prevIsLiked => !prevIsLiked);
-        setLikes(prevLikes => isLiked ? Math.max(0, prevLikes - 1) : prevLikes + 1);
+        setIsLiked((prevIsLiked) => !prevIsLiked);
+        setLikes((prevLikes) =>
+            isLiked ? Math.max(0, prevLikes - 1) : prevLikes + 1,
+        );
 
         try {
             // Get the actual server state after toggle
@@ -68,9 +71,9 @@ const LikeButton: React.FC<LikeButtonProps> = ({
             // On error, revert our optimistic update by checking the server state
             setIsLiked(initialIsLiked);
             setLikes(initialLikes);
-
         } finally {
             setUpdating(false);
+            revalidateTags(["likedProjects"]);
         }
     };
 
@@ -83,7 +86,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
                 className={cn(
                     "hover:bg-secondary rounded-full bg-secondary",
                     size === "small" ? "w-10 h-10" : "w-20 h-20",
-                    className
+                    className,
                 )}
             >
                 <Heart
@@ -91,7 +94,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
                         size === "small" ? "!w-5 !h-5" : "!w-10 !h-10",
                         isLiked
                             ? "fill-primary-foreground text-primary-foreground"
-                            : "text-primary-foreground"
+                            : "text-primary-foreground",
                     )}
                 />
             </Button>

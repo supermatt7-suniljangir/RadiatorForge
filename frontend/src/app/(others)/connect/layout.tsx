@@ -1,9 +1,9 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import {Suspense} from "react";
 import ConversationListWrapper from "@/components/connect/conversations/ConversationListWrapper";
 import {getRecentConversations} from "@/services/serverServices/connect/getRecentConversations";
 import {ChatRoomProvider} from "@/contexts/ChatRoomContext";
-import Spinner from "@/app/loading"; // Import the context
+import Spinner from "@/app/loading";
 
 export default async function ConnectLayout({
                                                 children,
@@ -23,11 +23,7 @@ export default async function ConnectLayout({
         <ChatRoomProvider>
             <div className="flex h-screen">
                 {/* Chat List Sidebar (25% on desktop, full width on mobile) */}
-                <Suspense
-                    fallback={
-                        <Spinner/>
-                    }
-                >
+                <Suspense fallback={<Spinner/>}>
                     <ConversationListWrapper chats={chatResponse.data}/>
                 </Suspense>
 
@@ -37,4 +33,3 @@ export default async function ConnectLayout({
         </ChatRoomProvider>
     );
 }
-

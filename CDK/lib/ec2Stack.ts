@@ -70,20 +70,20 @@ export class EC2Stack extends cdk.Stack {
       format: ec2.KeyPairFormat.PEM,
     });
 
-    // Create an EC2 instance using t2.small
-    const instance = new ec2.Instance(this, "MinimalInstance", {
-      vpc,
-      vpcSubnets: {
-        subnetType: ec2.SubnetType.PUBLIC,
-      },
-      securityGroup,
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.T2,
-        ec2.InstanceSize.SMALL,
-      ),
-      machineImage: ubuntuAmi,
-      keyPair,
-      userData: ec2.UserData.custom(userDataScript),
+    // Create an EC2 instance using t3.micro (Free Tier eligible with 2 vCPUs)
+    const instance = new ec2.Instance(this, 'MinimalInstance', {
+        vpc,
+        vpcSubnets: {
+            subnetType: ec2.SubnetType.PUBLIC,
+        },
+        securityGroup,
+        instanceType: ec2.InstanceType.of(
+            ec2.InstanceClass.T3,
+            ec2.InstanceSize.MICRO
+        ),
+        machineImage: ubuntuAmi,
+        keyPair,
+        userData: ec2.UserData.custom(userDataScript)
     });
 
     // Output the instance's public DNS

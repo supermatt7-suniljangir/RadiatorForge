@@ -1,0 +1,30 @@
+import mongoose from "mongoose";
+import { MONGO_URI } from "./configURLs";
+import logger from "./logger";
+import { AppError } from "../utils/responseTypes";
+const connectDB = async () => {
+  try {
+    if (!MONGO_URI) {
+      logger.error("Invalid mongo uri");
+      throw new AppError("invalid mongo uri", 500);
+    }
+    const conn = await mongoose.connect(MONGO_URI);
+    logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    logger.info(`DB name is ${mongoose.connection.name}` )
+  } catch (err) {
+    logger.error(`Error: ${err as Error}`);
+    process.exit(1);
+  }
+};
+// disconect db
+const disconnectDB = async () => {
+  try {
+    await mongoose.connection.close();
+    logger.info("MongoDB Disconnected");
+  } catch (err) {
+    logger.error(`Error: ${err as Error}`);
+    throw new AppError("Error disconnecting from database", 500);
+  }
+};
+
+export { connectDB, disconnectDB };

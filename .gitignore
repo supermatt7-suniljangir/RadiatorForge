@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Build outputs & cache
+dist/
+build/
+.next/
+out/
+cdk.out/
+*.tsbuildinfo
+
+# Logs & Runtime data
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pid
+*.seed
+*.pid.lock
+dump.rdb
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

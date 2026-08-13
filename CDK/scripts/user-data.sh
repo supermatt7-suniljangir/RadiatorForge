@@ -1,10 +1,17 @@
 #!/bin/bash
 
+# Create a 1.5 GB Swap File to prevent Out-Of-Memory (OOM) crashes
+sudo fallocate -l 1.5G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
 # Update system packages
 sudo apt update -y && sudo apt upgrade -y
 
-# Install Node.js 20 (compatible with Ubuntu 22.04)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Install Node.js 22 (compatible with Ubuntu 22.04 and matching @types/node)
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 
 # Install development tools (needed for some npm packages)
@@ -37,23 +44,26 @@ sudo systemctl enable nginx || echo "Nginx enable failed, but continuing..."
 sudo mkdir -p /home/ubuntu/app
 sudo chown -R ubuntu:ubuntu /home/ubuntu/app
 
-# Set up environment variables
-cat > /home/ubuntu/app/.env << EOL
+# Clone the RadiatorForge monorepo
+git clone https://github.com/supermatt7-suniljangir/RadiatorForge.git /home/ubuntu/app || echo "Git clone failed, but continuing..."
+
+# Set up environment variables template for backend
+cat > /home/ubuntu/app/RF-backend/.env << EOL
+NODE_ENV=production
 PORT=5500
-MONGO_URI=mongodb+srv://<your-mongo-uri>
+MONGO_URI=<your-mongo-uri>
 JWT_SECRET=<your-jwt-secret>
 GOOGLE_CLIENT_ID=<your-google-client-id>
+GOOGLE_CLIENT_SECRET=<your-google-client-secret>
+CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
+CLOUDINARY_API_KEY=<your-cloudinary-api-key>
+CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
+REDIS_URL=redis://localhost:6379
 AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
 AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
-AWS_REGION=us-east-1
-AWS_S3_BUCKET_NAME=<your-s3-bucket-name>
-CORS_ORIGIN=https://radiatorforge.suniljangir.site
+AWS_REGION=ap-south-1
+CORS_ORIGIN=https://rf.suniljangir.in
 EOL
-
-
-
-# Clone the backend repository
-git clone https://github.com/supermatt7-suniljangir/RF-backend.git /home/ubuntu/app || echo "Git clone failed, but continuing..."
 
 # Install TypeScript and ts-node globally
 sudo npm install -g typescript ts-node || echo "TypeScript/ts-node installation failed, but continuing..."
@@ -84,7 +94,7 @@ sudo systemctl restart nginx || echo "Nginx restart failed, but continuing..."
 # Create a setup script for the user to run after connecting
 cat > /home/ubuntu/setup.sh << EOL
 #!/bin/bash
-cd /home/ubuntu/app
+cd /home/ubuntu/app/RF-backend
 
 # Install dependencies
 npm install || echo "npm install failed, but continuing..."

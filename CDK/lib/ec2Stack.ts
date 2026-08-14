@@ -86,6 +86,11 @@ export class EC2Stack extends cdk.Stack {
         userData: ec2.UserData.custom(userDataScript)
     });
 
+    // Allocate and associate an Elastic IP (EIP) with the EC2 instance
+    const eip = new ec2.CfnEIP(this, "InstanceEIP", {
+      instanceId: instance.instanceId,
+    });
+
     // Output the instance's public DNS
     new cdk.CfnOutput(this, "InstancePublicDns", {
       value: instance.instancePublicDnsName,
@@ -96,6 +101,12 @@ export class EC2Stack extends cdk.Stack {
     new cdk.CfnOutput(this, "InstancePublicIp", {
       value: instance.instancePublicIp,
       description: "Public IP of the EC2 instance",
+    });
+
+    // Output the Elastic IP
+    new cdk.CfnOutput(this, "InstanceElasticIp", {
+      value: eip.ref,
+      description: "Elastic IP of the EC2 instance",
     });
   }
 }

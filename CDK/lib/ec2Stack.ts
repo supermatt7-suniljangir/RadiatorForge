@@ -5,108 +5,92 @@ import * as fs from "fs";
 import * as path from "path";
 
 export class EC2Stack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+		super(scope, id, props);
 
-    // Create a VPC with a single public subnet
-    const vpc = new ec2.Vpc(this, "MinimalVpc", {
-      maxAzs: 1,
-      subnetConfiguration: [
-        {
-          cidrMask: 24,
-          name: "public",
-          subnetType: ec2.SubnetType.PUBLIC,
-        },
-      ],
-      natGateways: 0, // No NAT gateways to avoid charges
-    });
+		// Create a VPC with a single public subnet
+		const vpc = new ec2.Vpc(this, "MinimalVpc", {
+			maxAzs: 1,
+			subnetConfiguration: [
+				{
+					cidrMask: 24,
+					name: "public",
+					subnetType: ec2.SubnetType.PUBLIC,
+				},
+			],
+			natGateways: 0, // No NAT gateways to avoid charges
+		});
 
-    // Create a security group for the EC2 instance
-    const securityGroup = new ec2.SecurityGroup(this, "MinimalSecurityGroup", {
-      vpc,
-      description: "Allow SSH and HTTP/HTTPS",
-      allowAllOutbound: true,
-    });
+		// Create a security group for the EC2 instance
+		const securityGroup = new ec2.SecurityGroup(this, "MinimalSecurityGroup", {
+			vpc,
+			description: "Allow SSH and HTTP/HTTPS",
+			allowAllOutbound: true,
+		});
 
-    // Allow SSH access from anywhere
-    securityGroup.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(22),
-      "Allow SSH from anywhere",
-    );
+		// Allow SSH access from anywhere
+		securityGroup.addIngressRule(
+			ec2.Peer.anyIpv4(),
+			ec2.Port.tcp(22),
+			"Allow SSH from anywhere",
+		);
 
-    // Allow HTTP access from anywhere
-    securityGroup.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(80),
-      "Allow HTTP from anywhere",
-    );
-    // Allow HTTPS access from anywhere
-    securityGroup.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(443),
-      "Allow HTTPS from anywhere",
-    );
+		// Allow HTTP access from anywhere
+		securityGroup.addIngressRule(
+			ec2.Peer.anyIpv4(),
+			ec2.Port.tcp(80),
+			"Allow HTTP from anywhere",
+		);
+		// Allow HTTPS access from anywhere
+		securityGroup.addIngressRule(
+			ec2.Peer.anyIpv4(),
+			ec2.Port.tcp(443),
+			"Allow HTTPS from anywhere",
+		);
 
-    // Allow access to your backend port (5500)
-    securityGroup.addIngressRule(
-      ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(5500),
-      "Allow backend port from anywhere",
-    );
+		// Allow access to your backend port (5500)
+		securityGroup.addIngressRule(
+			ec2.Peer.anyIpv4(),
+			ec2.Port.tcp(5500),
+			"Allow backend port from anywhere",
+		);
 
-    // Read the user data script from a separate file
-    const userDataScript = fs.readFileSync(
-      path.join(__dirname, "../scripts/user-data.sh"),
-      "utf8",
-    );
-  const ubuntuAmi = ec2.MachineImage.fromSsmParameter(
-    '/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id'
-);
-    // Automatically create the SSH KeyPair in AWS
-    const keyPair = new ec2.KeyPair(this, "RadiatorForgeKeyPair", {
-      keyPairName: "radiatorforge-keypair",
-      type: ec2.KeyPairType.RSA,
-      format: ec2.KeyPairFormat.PEM,
-    });
+		// Read the user data script from a separate file
+		const userDataScript = fs.readFileSync(
+			path.join(__dirname, "../scripts/user-data.sh"),
+			"utf8",
+		);
+		const ubuntuAmi = ec2.MachineImage.fromSsmParameter(
+			"/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id",
+		);
+		// Automatically create the SSH KeyPair in AWS
+		const keyPair = new ec2.KeyPair(this, "RadiatorForgeKeyPair", {
+			keyPairName: "radiatorforge-keypair",
+			type: ec2.KeyPairType.RSA,
+			format: ec2.KeyPairFormat.PEM,
+		});
 
-    // Create an EC2 instance using t3.micro (Free Tier eligible with 2 vCPUs)
-    const instance = new ec2.Instance(this, 'MinimalInstance', {
-        vpc,
-        vpcSubnets: {
-            subnetType: ec2.SubnetType.PUBLIC,
-        },
-        securityGroup,
-        instanceType: ec2.InstanceType.of(
-            ec2.InstanceClass.T3,
-            ec2.InstanceSize.MICRO
-        ),
-        machineImage: ubuntuAmi,
-        keyPair,
-        userData: ec2.UserData.custom(userDataScript)
-    });
+		// Create an EC2 instance using t3.micro (Free Tier eligible with 2 vCPUs)
+		const instance = new ec2.Instance(this, "MinimalInstance", {
+			vpc,
+			vpcSubnets: {
+				subnetType: ec2.SubnetType.PUBLIC,
+			},
+			securityGroup,
+			instanceType: ec2.InstanceType.of(
+				ec2.InstanceClass.T3,
+				ec2.InstanceSize.MICRO,
+			),
+			machineImage: ubuntuAmi,
+			keyPair,
+			userData: ec2.UserData.custom(userDataScript),
+		});
 
-    // Allocate and associate an Elastic IP (EIP) with the EC2 instance
-    const eip = new ec2.CfnEIP(this, "InstanceEIP", {
-      instanceId: instance.instanceId,
-    });
-
-    // Output the instance's public DNS
-    new cdk.CfnOutput(this, "InstancePublicDns", {
-      value: instance.instancePublicDnsName,
-      description: "Public DNS of the EC2 instance",
-    });
-
-    // Output the instance's public IP
-    new cdk.CfnOutput(this, "InstancePublicIp", {
-      value: instance.instancePublicIp,
-      description: "Public IP of the EC2 instance",
-    });
-
-    // Output the Elastic IP
-    new cdk.CfnOutput(this, "InstanceElasticIp", {
-      value: eip.ref,
-      description: "Elastic IP of the EC2 instance",
-    });
-  }
+		// Output the instance's public DNS
+		new cdk.CfnOutput(this, "InstancePublicDns", {
+			value: instance.instancePublicDnsName,
+			description: "Public DNS of the EC2 instance",
+		});
+	}
 }
+q;

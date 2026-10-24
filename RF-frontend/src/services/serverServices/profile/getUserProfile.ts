@@ -1,7 +1,5 @@
-"use server";
-
-import { URL } from "@/api/config/configs";
 import { cookies } from "next/headers";
+import { URL } from "@/api/config/configs";
 import { ApiResponse } from "@/types/ApiResponse";
 import { ApiResponse as AxiosApiResponse } from "../../../api/types/api-types";
 

@@ -8,7 +8,7 @@ import { Server } from "socket.io"; // Socket.IO for WebSocket communication
 import http from "http"; // HTTP module for creating the server
 import { initializeSocket } from "./socket"; // WebSocket logic
 import { getCorsConfig } from "./config/corsConfig";
-import { setupSocketErrorHandling } from "./utils/socketErrorHandler"; // CORS configuration
+import { setupSocketErrorHandling } from "./middlewares/socketErrorHandler"; // CORS configuration
 
 /**
  * initializeServer Function
@@ -23,9 +23,11 @@ const initializeServer = async () => {
     // Step 2: Create an HTTP server and attach the Express app
     const server = http.createServer(app);
 
+
     const io = new Server(server, {
       cors: getCorsConfig(),
     });
+
     // error handling helper
     setupSocketErrorHandling(io);
     const socketManager: { cleanup: () => void } = initializeSocket(io);
@@ -34,8 +36,7 @@ const initializeServer = async () => {
     server.listen(PORT, () => {
       logger.info(
         `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`,
-      );
-    });
+      );});
 
     /**
      * Graceful Shutdown Handler

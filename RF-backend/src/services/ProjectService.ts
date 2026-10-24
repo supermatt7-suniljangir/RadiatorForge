@@ -7,6 +7,7 @@ import { invalidateCache, redisClient } from "../redis/redisClient";
 import { invalidateProjectInteractionCache } from "../redis/cacheUtils";
 import logger from "../config/logger";
 import Tool from "../models/others/tools.model";
+import { AppError } from "../utils/responseTypes";
 
 class ProjectService {
   private dbService = new DbService<ProjectDocument>(Project);
@@ -102,8 +103,9 @@ class ProjectService {
         path: "tools",
         select: "name icon",
       });
-    console.log("fetched project is", project);
-    if (!project || !project.status) throw new Error("Project not found");
+    if (!project || !project.status) {
+      throw new AppError("Project not found", 404);
+    }
 
     if (project.status === "published") {
       await Project.findByIdAndUpdate(projectId, {

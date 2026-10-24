@@ -10,7 +10,7 @@ export function useUpdateUserProfile() {
 
   const updateProfile = async (
     payload: Partial<User>,
-  ): Promise<ApiResponse> => {
+  ): Promise<ApiResponse<User>> => {
     setLoading(true);
     try {
       const res = await updateProfileService(payload);

@@ -1,5 +1,11 @@
 "use client";
-import { Pencil, AtSign, SquareArrowOutUpRight, Settings } from "lucide-react";
+import {
+  Pencil,
+  AtSign,
+  SquareArrowOutUpRight,
+  Settings,
+  MapPin,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
@@ -59,6 +65,11 @@ export default function UserProfileInfo() {
           <div>
             <Settings size={16} className="inline" />{" "}
             {authUser.profile.profession}
+          </div>
+        )}
+        {authUser.profile.location && (
+          <div className="space-y-1">
+            <MapPin size={16} className="inline" /> {authUser.profile.location}
           </div>
         )}
         {authUser.profile?.website && (

@@ -96,35 +96,6 @@ class UploadController {
       next(new AppError("Failed to generate upload URLs", 500));
     }
   };
-  static deleteUploadedFiles = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    const { publicIds }: { publicIds: string[] } = req.body;
-
-    if (!Array.isArray(publicIds) || publicIds.length === 0) {
-      logger.error("Invalid input: publicIds array is empty or not an array");
-      next(
-        new AppError("Invalid input: publicIds must be a non-empty array", 400),
-      );
-      return;
-    }
-
-    try {
-      await cloudinary.api.delete_resources(publicIds);
-
-      res.status(200).json(
-        success({
-          data: null,
-          message: "Files deleted successfully",
-        }),
-      );
-    } catch (error) {
-      logger.error("Failed to delete files from Cloudinary:", error);
-      next(new AppError("Failed to delete files from Cloudinary", 500));
-    }
-  };
 }
 
 export default UploadController;

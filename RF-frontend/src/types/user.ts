@@ -18,6 +18,7 @@ export interface Profile {
   website?: string;
   profession?: string;
   social?: Social;
+  location?: string;
 }
 
 export interface Social {

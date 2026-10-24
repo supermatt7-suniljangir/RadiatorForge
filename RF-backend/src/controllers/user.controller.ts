@@ -208,7 +208,7 @@ class UserController {
   ): Promise<void> {
     try {
       if (!Types.ObjectId.isValid(req.params.id)) {
-        next(new AppError("Invalid user ID", 404));
+        next(new AppError("", 404));
         return;
       }
 

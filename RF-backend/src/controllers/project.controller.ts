@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import logger from "../config/logger";
-import { AppError, success } from "../utils/responseTypes";
+import CloudinaryService from "../services/CloudinaryService";
 import ProjectService from "../services/ProjectService";
+import { ProjectDocument, ProjectType } from "../types/project";
+import { AppError, success } from "../utils/responseTypes";
 
 class ProjectController {
   // Create a new project
@@ -82,7 +84,8 @@ class ProjectController {
         .json(success({ data: project, message: "Project fetched" }));
     } catch (error: any) {
       logger.error(`Error fetching project: ${error.message}`);
-      next(new AppError("Error fetching project", 500));
+      const status = error.statusCode || 500;
+      next(new AppError(error.message || "Unable to fetch project", status));
     }
   }
 
@@ -116,7 +119,7 @@ class ProjectController {
     try {
       const { userId: paramUserId } = req.params;
       const user = req.user;
-      if (!user && paramUserId === "personal") {
+      if ((!user || !user._id) && paramUserId === "personal") {
         next(new AppError("User not authenticated", 401));
         return;
       }
@@ -128,7 +131,7 @@ class ProjectController {
         next(new AppError("User ID is required", 400));
         return;
       }
-      const isOwnProfile = user?._id.toString() === targetUserId;
+      const isOwnProfile = user?._id?.toString() === targetUserId;
 
       const projects = await ProjectService.getProjectsByUser(
         targetUserId,
@@ -164,19 +167,38 @@ class ProjectController {
         return;
       }
       // Find the project first to check ownership
-      const project: any = await ProjectService.getProjectById(id);
+      const project: Partial<ProjectType> =
+        await ProjectService.getProjectById(id);
       if (!project) {
         next(new AppError("Project not found", 404));
         return;
       }
-
-      if (project.creator._id.toString() !== userId.toString()) {
+      const creatorId =
+        (project.creator as any)._id || (project.creator as any).id;
+      if (creatorId.toString() !== userId.toString()) {
+        // Access denied
         next(
           new AppError("You are not authorized to delete this project", 403),
         );
         return;
       }
 
+      //first delete all the media files associated with the project
+      /*
+      Watch out for Duplicates here, thumbnail can also be same as one of the media files, while cloudinary handles dupcliates gracefully, if you ever consider a migration, make sure to check whether the publicIds contains no dupcliates, can be done by converting the array to a set first.
+    
+      const publicIds = Array.from(
+  new Set([
+    project.thumbnail?.key,
+    ...(project.media?.map((item) => item.key) || []),
+  ].filter(Boolean))
+) as string[];
+      */
+      const publicIds: string[] = [
+        project.thumbnail?.key,
+        ...(project.media?.map((item) => item.key) || []),
+      ].filter(Boolean) as string[];
+      await CloudinaryService.deleteFiles(publicIds as string[]);
       // Delete the project
       await ProjectService.deleteProject(id);
 

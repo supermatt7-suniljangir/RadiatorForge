@@ -37,6 +37,7 @@ const BasicInfoEdit: React.FC = () => {
           profession: user?.profile?.profession || undefined,
           bio: user?.profile?.bio || undefined,
           website: user?.profile?.website || undefined,
+          location: user?.profile?.location || undefined,
         },
       });
       // Ensure availableForHire state is in sync with user data
@@ -53,6 +54,7 @@ const BasicInfoEdit: React.FC = () => {
         bio: formData.profile?.bio?.trim() || undefined,
         website: formData.profile?.website?.trim() || undefined,
         availableForHire: availableForHire,
+        location: formData.profile.location,
       },
     };
     if (cleanData.profile) {
@@ -81,10 +83,10 @@ const BasicInfoEdit: React.FC = () => {
     <Spinner />
   ) : (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex flex-col gap-8 md:flex-row">
         <div className="flex-shrink-0 self-center md:self-start">
           <ProfilePhoto />
-          <div className="space-x-2 flex items-center mt-2">
+          <div className="mt-2 flex items-center space-x-2">
             <Label htmlFor="availableForHire" className="text-base font-medium">
               Available for hire?
             </Label>
@@ -108,7 +110,7 @@ const BasicInfoEdit: React.FC = () => {
               })}
             />
             {errors.fullName && (
-              <span className="text-red-500 text-sm">
+              <span className="text-sm text-red-500">
                 {errors.fullName.message}
               </span>
             )}
@@ -122,7 +124,7 @@ const BasicInfoEdit: React.FC = () => {
               {...register("profile.profession")}
             />
             {errors.profile?.profession && (
-              <span className="text-red-500 text-sm">
+              <span className="text-sm text-red-500">
                 {errors.profile.profession.message}
               </span>
             )}
@@ -134,7 +136,7 @@ const BasicInfoEdit: React.FC = () => {
               maxLength={300}
               id="bio"
               placeholder="Tell us about yourself"
-              className="w-full min-h-[100px] resize-none"
+              className="min-h-[100px] w-full resize-none"
               {...register("profile.bio", {
                 maxLength: {
                   value: 300,
@@ -143,12 +145,24 @@ const BasicInfoEdit: React.FC = () => {
               })}
             />
             {errors.profile?.profession && (
-              <span className="text-red-500 text-sm">
+              <span className="text-sm text-red-500">
                 {errors.profile.profession.message}
               </span>
             )}
           </div>
-
+          <div className="space-y-2">
+            <Label htmlFor="fullName">Location</Label>
+            <Input
+              id="location"
+              placeholder="Enter your location"
+              {...register("profile.location")}
+            />
+            {errors.fullName && (
+              <span className="text-sm text-red-500">
+                {errors.profile.location.message}
+              </span>
+            )}
+          </div>
           <div className="space-y-2">
             <Label htmlFor="website">Website URL</Label>
             <Input
@@ -175,7 +189,7 @@ const BasicInfoEdit: React.FC = () => {
               })}
             />
             {errors.profile?.website && (
-              <span className="text-red-500 text-sm">
+              <span className="text-sm text-red-500">
                 {errors.profile.website.message}
               </span>
             )}
@@ -183,7 +197,7 @@ const BasicInfoEdit: React.FC = () => {
 
           <Button
             type="submit"
-            className="block py-2 px-6 rounded-md transition-colors F mx-auto relative"
+            className="F relative mx-auto block rounded-md px-6 py-2 transition-colors"
           >
             Save Changes
           </Button>

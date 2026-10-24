@@ -68,7 +68,7 @@ export interface UserResponse {
 }
 
 export interface MiniUser {
-  _id: Types.ObjectId;
+  _id: Types.ObjectId | string;
   fullName: string;
   email: string;
   profile: {

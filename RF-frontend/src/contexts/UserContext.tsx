@@ -1,11 +1,17 @@
 "use client";
 
-import { User } from "@/types/user";
-import { createContext, useState, useContext, useEffect } from "react";
-import React from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { logout as logoutService } from "@/features/auth/logout";
-import { getProfileService } from "@/services/clientServices/profile/ProfileService";
 import { toast } from "@/hooks/use-toast";
+import { getProfileService } from "@/services/clientServices/profile/ProfileService";
+import { User } from "@/types/user";
 
 interface UserContextType {
   user: User | null;
@@ -22,48 +28,43 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async (): Promise<void> => {
     try {
       const { data } = await getProfileService();
 
       setUser(data);
     } catch (error) {
       console.error("Failed to fetch user profile:", error);
-
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
-      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchUser();
-  }, []);
+  }, [fetchUser]);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     await fetchUser();
-  };
+  }, [fetchUser]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await logoutService();
     setUser(null);
-  };
+  }, []);
 
-  return (
-    <UserContext.Provider
-      value={{ user, setUser, logout, isLoading, setIsLoading, refreshUser }}
-    >
-      {children}
-    </UserContext.Provider>
-  );
+  const value = useMemo(() => {
+    return {
+      logout,
+      isLoading,
+      setUser,
+      user,
+      setIsLoading,
+      refreshUser,
+    };
+  }, [user, isLoading, refreshUser, logout]);
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 export const useUser = () => {

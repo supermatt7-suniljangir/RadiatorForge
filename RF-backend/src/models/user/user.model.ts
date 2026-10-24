@@ -1,7 +1,6 @@
-import { Schema, model } from "mongoose";
-import { Profile, Social, UserDocument } from "../../types/user";
 import bcrypt from "bcrypt";
-import { Model } from "mongoose";
+import { Model, model, Schema } from "mongoose";
+import { Profile, Social, UserDocument } from "../../types/user";
 
 const SocialSchema = new Schema<Social>(
   {
@@ -54,9 +53,8 @@ const UserSchema = new Schema<UserDocument>(
   { timestamps: true, versionKey: false },
 );
 
-// Indexes for fast retrieval
-UserSchema.index({ email: 1 }, { unique: true }); // Index on email for fast lookups and uniqueness
 UserSchema.index({ fullName: 1 }); // Index on fullName for fast lookups when searching by name
+// Indexes for fast retrieval
 
 // Password hashing middleware before saving
 UserSchema.pre<UserDocument>("save", async function (next) {

@@ -37,7 +37,6 @@ export const optionalAuth = (
 export const auth = (req: Request, res: Response, next: NextFunction): void => {
   const token = req.cookies.auth_token;
   if (!token) {
-    res.status(401);
     return next(new AppError("AUTH_REQUIRED", 401));
   }
 

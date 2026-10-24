@@ -9,10 +9,5 @@ const router = Router();
 
 // Upload Routes
 router.post("/files", limiters.standard, UploadController.generateUploadUrls);
-router.delete(
-  "/files",
-  limiters.standard,
-  UploadController.deleteUploadedFiles,
-);
 
 export default router;
